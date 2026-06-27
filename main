@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080b09">
+<title>Floatly</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#080b09;--s1:#0d1210;--s2:#131a16;--s3:#1a231e;--s4:#222d27;--tx:#e4ebe6;--tx2:#9faa9f;--tx3:#586158;--bd:#1a231e;--grn:#2ecc71;--grn-g:rgba(46,204,113,.1);--blu:#5ba8ff;--blu-g:rgba(91,168,255,.1);--pur:#a78bfa;--red:#ef5350;--red-g:rgba(239,83,80,.1);--amb:#f0b429}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--tx);max-width:430px;margin:0 auto;min-height:100dvh;-webkit-font-smoothing:antialiased}
+input,button{font-family:'Outfit',sans-serif;outline:none}
+.screen{display:none;min-height:100dvh}.screen.active{display:block;animation:pi .4s ease}
+@keyframes pi{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:13px;padding:13px 15px;font-size:15px;color:var(--tx);margin-bottom:10px}.inp:focus{border-color:var(--grn)}.inp::placeholder{color:var(--tx3)}
+.lbl{font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;display:block}
+.btn{width:100%;height:50px;border-radius:13px;border:none;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}.btn:active{transform:scale(.97)}.btn-g{background:var(--grn);color:#080b09}.btn-s{background:var(--s2);color:var(--tx);border:1px solid var(--bd)}
+.setup{min-height:100dvh;display:flex;flex-direction:column;justify-content:space-between;padding:80px 28px 44px}
+.logo{font-family:'Instrument Serif',serif;font-size:72px;color:var(--tx);text-align:center;letter-spacing:-3px;font-style:italic;line-height:1}
+.tag{text-align:center;color:var(--tx3);font-size:13px;margin-top:10px}
+.pg-h{padding:16px 20px 12px}.pg-t{font-size:22px;font-weight:700}.pg-s{font-size:12px;color:var(--tx3);margin-top:2px}
+.ht{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}.h-hi{font-size:13px;color:var(--tx3)}.h-nm{font-size:22px;font-weight:700;margin-top:1px}
+.pill{padding:5px 12px;border-radius:100px;font-size:10px;font-weight:700;background:var(--grn-g);color:var(--grn);border:1px solid rgba(46,204,113,.2)}
+.ra{display:flex;flex-direction:column;align-items:center;padding:16px 0 4px}.rb{position:relative;width:210px;height:210px}.rb svg{position:absolute;inset:0;transform:rotate(-90deg)}.rc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.rn{font-family:'Instrument Serif',serif;font-size:44px;letter-spacing:-2px;line-height:1}.rl{font-size:9px;font-weight:700;letter-spacing:1px;color:var(--tx3);margin-top:3px;text-transform:uppercase}.rs{font-size:11px;color:var(--tx3);margin-top:5px}
+.ss{display:flex;margin:8px 20px;background:var(--s2);border:1px solid var(--bd);border-radius:13px}.sc{flex:1;text-align:center;padding:11px 0}.sc+.sc{border-left:1px solid var(--bd)}.sv{font-family:'Instrument Serif',serif;font-size:19px}.sl{font-size:8px;font-weight:600;color:var(--tx3);letter-spacing:.4px;margin-top:2px;text-transform:uppercase}
+.card{background:var(--s2);border:1px solid var(--bd);border-radius:14px;margin:0 20px 10px;padding:14px 16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.card-t{font-size:13px;font-weight:700}.card-l{font-size:11px;font-weight:600;color:var(--grn);cursor:pointer}
+.tx-i{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--bd)}.tx-ic{width:34px;height:34px;border-radius:9px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}.tx-b{flex:1;min-width:0}.tx-n{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tx-m{font-size:10px;color:var(--tx3);margin-top:1px}.tx-a{font-family:'Instrument Serif',serif;font-size:17px;flex-shrink:0}.tx-d{background:none;border:none;color:var(--tx3);font-size:16px;cursor:pointer;padding:4px;flex-shrink:0}
+.em{text-align:center;padding:28px 20px;color:var(--tx3);font-size:13px;line-height:1.6}
+.inc-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--bd)}.inc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}.inc-info{flex:1}.inc-name{font-size:14px;font-weight:600}.inc-freq{font-size:10px;color:var(--tx3);margin-top:1px}.inc-amt{font-family:'Instrument Serif',serif;font-size:18px;color:var(--grn);flex-shrink:0}.inc-del{background:none;border:none;color:var(--tx3);font-size:15px;cursor:pointer;padding:4px;flex-shrink:0}
+.cost-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--bd)}.cost-icon{font-size:16px;width:26px;text-align:center;flex-shrink:0}.cost-info{flex:1}.cost-nm{font-size:13px;font-weight:600}.cost-fr{font-size:10px;color:var(--tx3)}.cost-wk{font-size:13px;font-weight:700;flex-shrink:0}.cost-del{background:none;border:none;color:var(--tx3);font-size:14px;cursor:pointer;padding:4px;flex-shrink:0}
+.bar-chart{display:flex;gap:3px;align-items:flex-end;height:100px;padding:0 20px;margin:12px 0}
+.bar-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}.bar-t{width:100%;height:80px;display:flex;align-items:flex-end;justify-content:center}.bar-f{width:70%;border-radius:4px 4px 0 0;min-height:2px;transition:height .5s ease}.bar-l{font-size:8px;color:var(--tx3);font-weight:600}.bar-a{font-size:7px;color:var(--tx2);font-weight:600}
+.freq-r{display:flex;gap:6px;margin-bottom:14px}.freq-b{flex:1;padding:10px;text-align:center;background:var(--s2);border:1px solid var(--bd);border-radius:10px;font-size:11px;font-weight:600;color:var(--tx3);cursor:pointer}.freq-b.on{background:var(--grn-g);border-color:var(--grn);color:var(--grn)}
+.cat-g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}.cat-o{padding:9px 4px;text-align:center;background:var(--s2);border:1px solid var(--bd);border-radius:10px;cursor:pointer}.cat-o.on{background:var(--grn-g);border-color:var(--grn)}.cat-o-i{font-size:17px;margin-bottom:1px}.cat-o-l{font-size:8px;font-weight:600;color:var(--tx3)}.cat-o.on .cat-o-l{color:var(--grn)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}.ov.open{display:flex}
+.sh{background:var(--s1);border-radius:18px 18px 0 0;width:100%;max-width:430px;max-height:90vh;overflow-y:auto;padding:10px 22px 34px;animation:su .35s cubic-bezier(.22,1,.36,1)}@keyframes su{from{transform:translateY(100%)}to{transform:none}}.sh-h{width:32px;height:4px;background:var(--s3);border-radius:2px;margin:0 auto 14px}.sh-t{font-size:18px;font-weight:700;margin-bottom:4px}.sh-s{font-size:12px;color:var(--tx3);margin-bottom:14px;line-height:1.5}
+.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--bg);border-top:1px solid var(--bd);display:none;z-index:50;padding-bottom:max(env(safe-area-inset-bottom),8px)}.tabs.show{display:flex}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 4px;cursor:pointer;background:none;border:none}.ti svg{color:var(--tx3)}.ti.on svg{color:var(--grn)}.ti-l{font-size:9px;font-weight:600;color:var(--tx3);letter-spacing:.3px}.ti.on .ti-l{color:var(--grn)}
+.fab{position:fixed;bottom:max(calc(env(safe-area-inset-bottom)+54px),68px);right:calc(50% - 195px);width:56px;height:56px;border-radius:28px;background:var(--grn);display:none;align-items:center;justify-content:center;z-index:60;cursor:pointer;box-shadow:0 4px 20px rgba(46,204,113,.35)}.fab.show{display:flex}.fab:active{transform:scale(.92)}.fab svg{color:#080b09}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--s1);border:1px solid var(--bd);color:var(--tx);padding:10px 18px;border-radius:100px;font-size:13px;font-weight:600;z-index:200;transition:transform .4s cubic-bezier(.34,1.2,.64,1)}.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="screen active" id="setupScreen"><div class="setup"><div><div class="logo">floatly</div><div class="tag">Know where your money goes.</div></div><div>
+<div style="font-size:20px;font-weight:700;margin-bottom:20px">Get started</div>
+<label class="lbl">Your name</label><input class="inp" id="sName" placeholder="First name">
+<label class="lbl">Weekly spending budget (£)</label><input class="inp" type="number" id="sBudget" placeholder="e.g. 120" inputmode="decimal">
+<div style="font-size:11px;color:var(--tx3);margin:-4px 0 14px;line-height:1.5">Your day-to-day spending budget — food, coffee, fuel, going out. Not rent or bills.</div>
+<button class="btn btn-g" onclick="saveSetup()">Start Tracking</button>
+</div></div></div>
+
+<!-- HOME -->
+<div class="screen" id="homeScreen">
+<div class="ht"><div><div class="h-hi" id="hHi"></div><div class="h-nm" id="hNm">—</div></div><div class="pill" id="hPill">—</div></div>
+<div class="ra"><div class="rb"><svg width="210" height="210" viewBox="0 0 210 210"><circle cx="105" cy="105" r="92" fill="none" stroke="rgba(46,204,113,.1)" stroke-width="13"/><circle cx="105" cy="105" r="92" fill="none" stroke="var(--grn)" stroke-width="13" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578" id="r1" style="transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),stroke .3s"/></svg><div class="rc"><div style="font-size:10px;color:var(--tx3);font-weight:600;letter-spacing:.5px;margin-bottom:2px">LEFT TODAY</div><div class="rn" id="rN">£0</div><div class="rl" id="rL">to spend</div><div class="rs" id="rS"></div></div></div></div>
+<div class="ss"><div class="sc"><div class="sv" id="s1" style="color:var(--red)">£0</div><div class="sl">Today</div></div><div class="sc"><div class="sv" id="s2">£0</div><div class="sl">Daily</div></div><div class="sc"><div class="sv" id="s3" style="color:var(--grn)">£0</div><div class="sl">Week</div></div><div class="sc"><div class="sv" id="s4" style="color:var(--blu)">£0</div><div class="sl">Monthly</div></div></div>
+<div style="padding:8px 20px 0"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">THIS WEEK</div></div>
+<div class="bar-chart" id="weekChart"></div>
+<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 4px"><span style="font-size:13px;font-weight:700">Today</span><span class="card-l" onclick="openModal('addModal')">+ Add</span></div>
+<div id="txList"><div class="em">No spending yet.</div></div>
+<div style="height:100px"></div>
+</div>
+
+<!-- INCOME TAB -->
+<div class="screen" id="incScreen">
+<div class="pg-h"><div class="pg-t">Income</div><div class="pg-s">Your money coming in</div></div>
+<div style="background:var(--grn-g);border:1px solid rgba(46,204,113,.2);border-radius:16px;padding:18px;margin:0 20px 14px;text-align:center">
+<div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:4px">TOTAL MONTHLY INCOME</div>
+<div style="font-family:'Instrument Serif',serif;font-size:44px;color:var(--grn);line-height:1" id="incTotal">£0</div>
+<div style="font-size:11px;color:var(--tx3);margin-top:4px" id="incWeekly">£0 / week</div>
+</div>
+<div style="padding:0 20px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">INCOME SOURCES</span><span class="card-l" onclick="openModal('addIncModal')">+ Add</span></div>
+<div id="incList"><div class="em">No income sources yet. Tap + to add.</div></div></div>
+<div style="height:100px"></div>
+</div>
+
+<!-- CALCULATOR TAB -->
+<div class="screen" id="calcScreen">
+<div class="pg-h"><div class="pg-t">Calculator</div><div class="pg-s">Income vs expenses breakdown</div></div>
+<div style="background:var(--s2);border:1px solid var(--bd);border-radius:16px;padding:18px;margin:0 20px 14px">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;text-align:center">
+<div><div style="font-family:'Instrument Serif',serif;font-size:26px;color:var(--grn)" id="cInc">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">INCOME/MO</div></div>
+<div><div style="font-family:'Instrument Serif',serif;font-size:26px;color:var(--red)" id="cExp">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">EXPENSES/MO</div></div>
+<div><div style="font-family:'Instrument Serif',serif;font-size:26px" id="cSav">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">SAVINGS/MO</div></div>
+</div>
+<div style="height:4px;display:flex;border-radius:2px;overflow:hidden"><div id="cBar1" style="background:var(--red)"></div><div id="cBar2" style="background:var(--grn)"></div></div>
+<div style="font-size:10px;color:var(--tx3);text-align:center;margin-top:8px" id="cPct"></div>
+</div>
+<div style="padding:0 20px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">RECURRING COSTS</span><span class="card-l" onclick="openModal('addCostModal')">+ Add</span></div>
+<div id="costList"><div class="em">No costs added yet.</div></div></div>
+<div style="padding:0 20px;margin-top:14px"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:8px">ACTUAL SPENDING THIS MONTH</div>
+<div class="card" style="margin:0;text-align:center"><div style="font-family:'Instrument Serif',serif;font-size:28px;color:var(--red)" id="cActual">£0</div><div style="font-size:10px;color:var(--tx3);margin-top:2px" id="cActualSub">from logged transactions</div></div></div>
+<div style="height:100px"></div>
+</div>
+
+<!-- GROWTH TAB -->
+<div class="screen" id="growthScreen">
+<div class="pg-h"><div class="pg-t">Growth</div><div class="pg-s">Projected savings over time</div></div>
+<div style="background:var(--grn-g);border:1px solid rgba(46,204,113,.2);border-radius:16px;padding:18px;margin:0 20px 14px;text-align:center">
+<div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:6px">IF YOU KEEP THIS UP</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+<div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--grn)" id="g1">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">3 MONTHS</div></div>
+<div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--grn)" id="g2">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">6 MONTHS</div></div>
+<div><div style="font-family:'Instrument Serif',serif;font-size:24px;color:var(--grn)" id="g3">£0</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">1 YEAR</div></div>
+</div></div>
+<div style="padding:0 20px"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:4px">12-WEEK PROJECTION</div></div>
+<div class="bar-chart" id="growthChart" style="height:130px"></div>
+<div class="card" style="margin-top:10px"><div style="font-size:12px;color:var(--tx2);line-height:1.6" id="gTip">Add income sources and costs to see projections.</div></div>
+<div style="height:100px"></div>
+</div>
+
+<!-- ADD SPENDING -->
+<div class="ov" id="addModal" onclick="if(event.target.id==='addModal')closeModal('addModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Log Spending</div>
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="txAmt" placeholder="e.g. 4.50" inputmode="decimal" step="0.01">
+<label class="lbl">What for?</label><input class="inp" id="txNote" placeholder="e.g. Tesco, Costa, Uber">
+<label class="lbl">Category</label><div class="cat-g" id="cg1"></div>
+<button class="btn btn-g" onclick="saveTx()">Log Spending</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('addModal')">Cancel</button>
+</div></div>
+
+<!-- ADD INCOME SOURCE -->
+<div class="ov" id="addIncModal" onclick="if(event.target.id==='addIncModal')closeModal('addIncModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Add Income Source</div><div class="sh-s">Salary, freelance, side hustle — anything coming in.</div>
+<label class="lbl">Source name</label><input class="inp" id="incName" placeholder="e.g. Salary, Vinted, Freelance">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="incAmt" placeholder="e.g. 2200" inputmode="decimal">
+<label class="lbl">How often?</label>
+<div class="freq-r"><div class="freq-b on" id="ifW" onclick="incFreq='weekly';pickIF()">Weekly</div><div class="freq-b" id="ifB" onclick="incFreq='biweekly';pickIF()">Bi-weekly</div><div class="freq-b" id="ifM" onclick="incFreq='monthly';pickIF()">Monthly</div></div>
+<label class="lbl">Consistent?</label>
+<div class="freq-r" style="margin-bottom:14px"><div class="freq-b on" id="icY" onclick="incConsistent=true;pickIC()">Yes, regular</div><div class="freq-b" id="icN" onclick="incConsistent=false;pickIC()">Varies</div></div>
+<button class="btn btn-g" onclick="saveInc()">Add Source</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('addIncModal')">Cancel</button>
+</div></div>
+
+<!-- ADD RECURRING COST -->
+<div class="ov" id="addCostModal" onclick="if(event.target.id==='addCostModal')closeModal('addCostModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Add Recurring Cost</div>
+<label class="lbl">What is it?</label><input class="inp" id="costName" placeholder="e.g. Lunch, Fuel, Gym">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="costAmt" placeholder="e.g. 8" inputmode="decimal">
+<label class="lbl">How often?</label>
+<div class="freq-r"><div class="freq-b on" id="cfD" onclick="costFreq='daily';pickCF()">Daily</div><div class="freq-b" id="cfW" onclick="costFreq='weekly';pickCF()">Weekly</div><div class="freq-b" id="cfM" onclick="costFreq='monthly';pickCF()">Monthly</div></div>
+<label class="lbl">Category</label><div class="cat-g" id="cg2"></div>
+<button class="btn btn-g" onclick="saveCost()">Add Cost</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('addCostModal')">Cancel</button>
+</div></div>
+
+<!-- SETTINGS -->
+<div class="ov" id="setModal" onclick="if(event.target.id==='setModal')closeModal('setModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Settings</div>
+<label class="lbl">Weekly spending budget (£)</label><input class="inp" type="number" id="setBud" inputmode="decimal">
+<button class="btn btn-g" onclick="cfg.weeklyBudget=+$('setBud').value||cfg.weeklyBudget;save();closeModal('setModal');renderAll();toast('Updated')">Save</button>
+<button class="btn btn-s" style="margin-top:8px;color:var(--red)" onclick="if(confirm('Delete all data?')){localStorage.clear();location.reload()}">Reset All</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('setModal')">Close</button>
+</div></div>
+
+<div class="tabs" id="tabs">
+<button class="ti on" id="t1" onclick="goTab('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="ti-l">Home</span></button>
+<button class="ti" id="t2" onclick="goTab('inc')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="ti-l">Income</span></button>
+<button class="ti" id="t3" onclick="goTab('calc')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="10" y2="14"/><line x1="14" y1="14" x2="16" y2="14"/></svg><span class="ti-l">Calculator</span></button>
+<button class="ti" id="t4" onclick="goTab('growth')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 8 14 12"/><polyline points="2 20 8 14 12 18 22 8"/></svg><span class="ti-l">Growth</span></button>
+</div>
+<div class="fab" id="fab" onclick="openModal('addModal')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CATS=[{id:'food',i:'🍔',l:'Food'},{id:'coffee',i:'☕',l:'Coffee'},{id:'fuel',i:'⛽',l:'Fuel'},{id:'transport',i:'🚗',l:'Transport'},{id:'shopping',i:'🛍️',l:'Shopping'},{id:'drinks',i:'🍺',l:'Drinks'},{id:'subs',i:'📱',l:'Subs'},{id:'other',i:'📦',l:'Other'}];
+let cfg=null,txs=[],incs=[],costs=[],selCat='food',costCat='food',costFreq='daily',incFreq='weekly',incConsistent=true;
+const $=id=>document.getElementById(id),td=()=>new Date().toISOString().split('T')[0];
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function openModal(id){$(id).classList.add('open')}
+function closeModal(id){$(id).classList.remove('open')}
+function save(){localStorage.setItem('f_c',JSON.stringify(cfg));localStorage.setItem('f_tx',JSON.stringify(txs));localStorage.setItem('f_inc',JSON.stringify(incs));localStorage.setItem('f_costs',JSON.stringify(costs))}
+function load(){try{cfg=JSON.parse(localStorage.getItem('f_c'))}catch(e){}try{txs=JSON.parse(localStorage.getItem('f_tx'))||[]}catch(e){}try{incs=JSON.parse(localStorage.getItem('f_inc'))||[]}catch(e){}try{costs=JSON.parse(localStorage.getItem('f_costs'))||[]}catch(e){}}
+
+function weekStart(){const n=new Date(),d=n.getDay(),diff=d===0?6:d-1;const w=new Date(n);w.setDate(w.getDate()-diff);w.setHours(0,0,0,0);return w}
+function daysLeft(){return Math.max(1,7-Math.floor((new Date()-weekStart())/(864e5)))}
+function spentToday(){return txs.filter(t=>t.d===td()).reduce((s,t)=>s+t.a,0)}
+function spentWeek(){const ws=weekStart().toISOString().split('T')[0];return txs.filter(t=>t.d>=ws).reduce((s,t)=>s+t.a,0)}
+function spentMonth(){const m=td().slice(0,7);return txs.filter(t=>t.d.startsWith(m)).reduce((s,t)=>s+t.a,0)}
+function dailyBudget(){return cfg?Math.round(((cfg.weeklyBudget-spentWeek())/daysLeft())*100)/100:0}
+function leftToday(){return Math.round((dailyBudget()-spentToday())*100)/100}
+function monthlyIncome(){return incs.reduce((s,i)=>{if(i.freq==='weekly')return s+i.amt*4.33;if(i.freq==='biweekly')return s+i.amt*2.17;return s+i.amt},0)}
+function weeklyIncome(){return monthlyIncome()/4.33}
+function monthlyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*30;if(c.freq==='weekly')return s+c.amt*4.33;return s+c.amt},0)+cfg.weeklyBudget*4.33}
+function monthlySavings(){return monthlyIncome()-monthlyCosts()}
+
+function saveSetup(){const n=$('sName').value.trim(),b=+$('sBudget').value;if(!n)return toast('Name?');if(!b||b<10)return toast('Min £10');cfg={name:n,weeklyBudget:b};save();$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
+
+function renderAll(){renderHome();renderInc();renderCalc();renderGrowth()}
+
+function renderHome(){
+  if(!cfg)return;const h=new Date().getHours();
+  $('hHi').textContent=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  $('hNm').textContent=cfg.name;
+  const dn=Math.floor((new Date()-weekStart())/864e5)+1;
+  $('hPill').textContent='Day '+dn+'/7';
+  const db=dailyBudget(),st=spentToday(),lt=leftToday(),wl=Math.round((cfg.weeklyBudget-spentWeek())*100)/100,over=lt<0;
+  $('r1').style.strokeDashoffset=578-(578*Math.min(1,st/Math.max(db,1)));$('r1').style.stroke=over?'var(--red)':'var(--grn)';
+  $('rN').textContent='£'+Math.abs(lt).toFixed(2);$('rN').style.color=over?'var(--red)':'var(--grn)';
+  $('rL').textContent=over?'overspent':'to spend';$('rL').style.color=over?'var(--red)':'var(--tx3)';
+  $('rS').textContent='£'+db.toFixed(2)+'/day · £'+wl.toFixed(2)+' left';
+  $('s1').textContent='£'+st.toFixed(2);$('s2').textContent='£'+db.toFixed(2);
+  $('s3').textContent='£'+wl.toFixed(2);$('s3').style.color=wl<0?'var(--red)':'var(--grn)';
+  const mi=monthlyIncome();$('s4').textContent='£'+Math.round(mi);$('s4').style.color=mi>0?'var(--blu)':'var(--tx3)';
+  // Week chart
+  const ws=weekStart(),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let mx=db||1;const wd=[];
+  for(let i=0;i<7;i++){const d=new Date(ws);d.setDate(d.getDate()+i);const ds=d.toISOString().split('T')[0];const sp=txs.filter(t=>t.d===ds).reduce((s,t)=>s+t.a,0);if(sp>mx)mx=sp;wd.push({l:days[i],sp,today:ds===td()})}
+  $('weekChart').innerHTML=wd.map(d=>{const h=d.sp>0?Math.max(4,Math.round(d.sp/mx*100)):0;const col=d.sp>db?'var(--red)':d.today?'var(--grn)':'var(--blu)';return`<div class="bar-w"><div class="bar-a">${d.sp>0?'£'+d.sp.toFixed(0):''}</div><div class="bar-t"><div class="bar-f" style="height:${h}%;background:${col}"></div></div><div class="bar-l" style="${d.today?'color:var(--grn)':''}">${d.l}</div></div>`}).join('');
+  // Tx list
+  const today=txs.filter(t=>t.d===td()).sort((a,b)=>b.ts-a.ts);
+  $('txList').innerHTML=today.length?today.map(t=>{const cat=CATS.find(c=>c.id===t.cat)||CATS[7];return`<div class="tx-i"><div class="tx-ic">${cat.i}</div><div class="tx-b"><div class="tx-n">${t.note||cat.l}</div><div class="tx-m">${cat.l} · ${new Date(t.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div><div class="tx-a" style="color:var(--red)">-£${t.a.toFixed(2)}</div><button class="tx-d" onclick="txs=txs.filter(x=>x.ts!==${t.ts});save();renderHome();toast('Removed')">×</button></div>`}).join(''):'<div class="em">No spending yet.</div>';
+}
+
+function renderInc(){
+  const mi=monthlyIncome(),wi=weeklyIncome();
+  $('incTotal').textContent='£'+Math.round(mi).toLocaleString();
+  $('incWeekly').textContent='£'+Math.round(wi)+' / week';
+  $('incList').innerHTML=incs.length?incs.map((inc,i)=>{
+    const monthly=inc.freq==='weekly'?inc.amt*4.33:inc.freq==='biweekly'?inc.amt*2.17:inc.amt;
+    return`<div class="inc-item"><div class="inc-icon" style="background:var(--grn-g)">💰</div><div class="inc-info"><div class="inc-name">${inc.name}</div><div class="inc-freq">£${inc.amt.toFixed(2)} / ${inc.freq} ${inc.consistent?'· consistent':'· varies'}</div></div><div class="inc-amt">£${Math.round(monthly)}<span style="font-size:10px;color:var(--tx3);font-family:Outfit">/mo</span></div><button class="inc-del" onclick="incs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`
+  }).join(''):'<div class="em">No income sources yet.</div>';
+}
+
+function renderCalc(){
+  const mi=monthlyIncome(),mc=monthlyCosts(),ms=monthlySavings();
+  $('cInc').textContent='£'+Math.round(mi);$('cExp').textContent='£'+Math.round(mc);
+  $('cSav').textContent='£'+Math.round(ms);$('cSav').style.color=ms>0?'var(--grn)':'var(--red)';
+  const pct=mi>0?Math.round(mc/mi*100):0;
+  $('cBar1').style.width=Math.min(100,pct)+'%';$('cBar2').style.width=Math.max(0,100-pct)+'%';
+  $('cPct').textContent=mi>0?(pct+'% of income goes to expenses'):'Add income sources to see breakdown';
+  // Costs
+  $('costList').innerHTML=costs.length?costs.map((c,i)=>{const cat=CATS.find(x=>x.id===c.cat)||CATS[7];const mo=c.freq==='daily'?c.amt*30:c.freq==='weekly'?c.amt*4.33:c.amt;return`<div class="cost-item"><div class="cost-icon">${cat.i}</div><div class="cost-info"><div class="cost-nm">${c.name}</div><div class="cost-fr">£${c.amt.toFixed(2)} / ${c.freq==='daily'?'day':c.freq==='weekly'?'week':'month'}</div></div><div class="cost-wk">£${Math.round(mo)}<span style="font-size:9px;color:var(--tx3)">/mo</span></div><button class="cost-del" onclick="costs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`}).join(''):'<div class="em">No costs added.</div>';
+  // Actual spending
+  $('cActual').textContent='£'+spentMonth().toFixed(2);
+  $('cActualSub').textContent='from '+txs.filter(t=>t.d.startsWith(td().slice(0,7))).length+' transactions this month';
+}
+
+function renderGrowth(){
+  const ms=monthlySavings(),ws=ms/4.33;
+  $('g1').textContent='£'+Math.max(0,Math.round(ms*3)).toLocaleString();$('g1').style.color=ms>0?'var(--grn)':'var(--red)';
+  $('g2').textContent='£'+Math.max(0,Math.round(ms*6)).toLocaleString();$('g2').style.color=ms>0?'var(--grn)':'var(--red)';
+  $('g3').textContent='£'+Math.max(0,Math.round(ms*12)).toLocaleString();$('g3').style.color=ms>0?'var(--grn)':'var(--red)';
+  let cum=0,mx=1;const wks=[];
+  for(let i=1;i<=12;i++){cum+=ws;wks.push({w:i,t:Math.round(cum)});if(cum>mx)mx=cum}
+  $('growthChart').innerHTML=wks.map(w=>{const h=Math.max(3,Math.round(Math.max(0,w.t)/mx*100));return`<div class="bar-w"><div class="bar-a" style="font-size:7px">${w.t>0?'£'+w.t:''}</div><div class="bar-t" style="height:110px"><div class="bar-f" style="height:${h}%;background:var(--grn)"></div></div><div class="bar-l">${w.w}</div></div>`}).join('');
+  const mi=monthlyIncome();
+  $('gTip').innerHTML=ms>0?`Saving <b style="color:var(--grn)">£${Math.round(ms)}/month</b> (${Math.round(ms/mi*100)}% of income). In a year that's <b style="color:var(--grn)">£${Math.round(ms*12).toLocaleString()}</b>.`:ms===0?'Breaking even. Try cutting one daily cost to start saving.':'<span style="color:var(--red)">Spending more than earning.</span> Review costs in Calculator.';
+}
+
+// Tx
+function renderCG(id,sel){$(id).innerHTML=CATS.map(c=>`<div class="cat-o ${c.id===sel?'on':''}" onclick="${id==='cg1'?'selCat':'costCat'}='${c.id}';renderCG('${id}','${c.id}')"><div class="cat-o-i">${c.i}</div><div class="cat-o-l">${c.l}</div></div>`).join('')}
+function saveTx(){const a=parseFloat($('txAmt').value),n=$('txNote').value.trim();if(!a||a<=0)return toast('Enter amount');txs.push({a:Math.round(a*100)/100,note:n,cat:selCat,d:td(),ts:Date.now()});save();closeModal('addModal');$('txAmt').value='';$('txNote').value='';renderAll();toast('✓ -£'+a.toFixed(2))}
+
+// Income
+function pickIF(){['ifW','ifB','ifM'].forEach(id=>$(id).classList.remove('on'));$({weekly:'ifW',biweekly:'ifB',monthly:'ifM'}[incFreq]).classList.add('on')}
+function pickIC(){$('icY').classList.toggle('on',incConsistent);$('icN').classList.toggle('on',!incConsistent)}
+function saveInc(){const n=$('incName').value.trim(),a=parseFloat($('incAmt').value);if(!n)return toast('Name this source');if(!a||a<=0)return toast('Enter amount');incs.push({name:n,amt:Math.round(a*100)/100,freq:incFreq,consistent:incConsistent});save();closeModal('addIncModal');$('incName').value='';$('incAmt').value='';renderAll();toast('✓ '+n+' added')}
+
+// Costs
+function pickCF(){['cfD','cfW','cfM'].forEach(id=>$(id).classList.remove('on'));$({daily:'cfD',weekly:'cfW',monthly:'cfM'}[costFreq]).classList.add('on')}
+function saveCost(){const n=$('costName').value.trim(),a=parseFloat($('costAmt').value);if(!n)return toast('Name this cost');if(!a||a<=0)return toast('Enter amount');costs.push({name:n,amt:Math.round(a*100)/100,freq:costFreq,cat:costCat});save();closeModal('addCostModal');$('costName').value='';$('costAmt').value='';renderAll();toast('✓ '+n+' added')}
+
+function goTab(t){['t1','t2','t3','t4'].forEach(id=>$(id).classList.remove('on'));$({home:'t1',inc:'t2',calc:'t3',growth:'t4'}[t]).classList.add('on');
+$('homeScreen').style.display=t==='home'?'block':'none';$('incScreen').style.display=t==='inc'?'block':'none';
+$('calcScreen').style.display=t==='calc'?'block':'none';$('growthScreen').style.display=t==='growth'?'block':'none';renderAll()}
+
+load();if(cfg){$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
+renderCG('cg1','food');renderCG('cg2','food');
+</script>
+</body>
+</html>
