@@ -56,8 +56,9 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <div class="screen" id="homeScreen">
 <div class="ht"><div><div class="h-hi" id="hHi"></div><div class="h-nm" id="hNm">—</div></div><div class="pill" id="hPill">—</div></div>
 <div class="ra"><div class="rb"><svg width="210" height="210" viewBox="0 0 210 210"><circle cx="105" cy="105" r="92" fill="none" stroke="rgba(46,204,113,.1)" stroke-width="13"/><circle cx="105" cy="105" r="92" fill="none" stroke="var(--grn)" stroke-width="13" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578" id="r1" style="transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),stroke .3s"/></svg><div class="rc"><div style="font-size:10px;color:var(--tx3);font-weight:600;letter-spacing:.5px;margin-bottom:2px">LEFT TODAY</div><div class="rn" id="rN">£0</div><div class="rl" id="rL">to spend</div><div class="rs" id="rS"></div></div></div></div>
-<div class="ss"><div class="sc"><div class="sv" id="s1" style="color:var(--red)">£0</div><div class="sl">Today</div></div><div class="sc"><div class="sv" id="s2">£0</div><div class="sl">Daily</div></div><div class="sc"><div class="sv" id="s3" style="color:var(--grn)">£0</div><div class="sl">Week</div></div><div class="sc"><div class="sv" id="s4" style="color:var(--blu)">£0</div><div class="sl">Monthly</div></div></div>
+<div class="ss"><div class="sc"><div class="sv" id="s1" style="color:var(--red)">£0</div><div class="sl">Today</div></div><div class="sc"><div class="sv" id="s2">£0</div><div class="sl">Free/day</div></div><div class="sc"><div class="sv" id="s3" style="color:var(--grn)">£0</div><div class="sl">Week</div></div><div class="sc"><div class="sv" id="s4" style="color:var(--blu)">£0</div><div class="sl">Monthly</div></div></div>
 <div style="padding:8px 20px 0"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">THIS WEEK</div></div>
+<div class="card" id="recurCard" style="display:none;border-color:rgba(240,180,41,.15)"></div>
 <div class="bar-chart" id="weekChart"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 4px"><span style="font-size:13px;font-weight:700">Today</span><span class="card-l" onclick="openModal('addModal')">+ Add</span></div>
 <div id="txList"><div class="em">No spending yet.</div></div>
@@ -176,7 +177,9 @@ function daysLeft(){return Math.max(1,7-Math.floor((new Date()-weekStart())/(864
 function spentToday(){return txs.filter(t=>t.d===td()).reduce((s,t)=>s+t.a,0)}
 function spentWeek(){const ws=weekStart().toISOString().split('T')[0];return txs.filter(t=>t.d>=ws).reduce((s,t)=>s+t.a,0)}
 function spentMonth(){const m=td().slice(0,7);return txs.filter(t=>t.d.startsWith(m)).reduce((s,t)=>s+t.a,0)}
-function dailyBudget(){return cfg?Math.round(((cfg.weeklyBudget-spentWeek())/daysLeft())*100)/100:0}
+function weeklyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*7;if(c.freq==='weekly')return s+c.amt;return s+c.amt/4.33},0)}
+function dailyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt;if(c.freq==='weekly')return s+c.amt/7;return s+c.amt/30},0)}
+function dailyBudget(){if(!cfg)return 0;const weeklyFree=cfg.weeklyBudget-weeklyCosts()-spentWeek();return Math.round((weeklyFree/daysLeft())*100)/100}
 function leftToday(){return Math.round((dailyBudget()-spentToday())*100)/100}
 function monthlyIncome(){return incs.reduce((s,i)=>{if(i.freq==='weekly')return s+i.amt*4.33;if(i.freq==='biweekly')return s+i.amt*2.17;return s+i.amt},0)}
 function weeklyIncome(){return monthlyIncome()/4.33}
@@ -201,6 +204,11 @@ function renderHome(){
   $('s1').textContent='£'+st.toFixed(2);$('s2').textContent='£'+db.toFixed(2);
   $('s3').textContent='£'+wl.toFixed(2);$('s3').style.color=wl<0?'var(--red)':'var(--grn)';
   const mi=monthlyIncome();$('s4').textContent='£'+Math.round(mi);$('s4').style.color=mi>0?'var(--blu)':'var(--tx3)';
+  $('rS').textContent='£'+db.toFixed(2)+'/day for extras · £'+wl.toFixed(2)+' left';
+  // Recurring costs card
+  const dc=dailyCosts(),wc=weeklyCosts();
+  const rcEl=$('recurCard');
+  if(rcEl){if(costs.length>0){rcEl.style.display='block';rcEl.innerHTML=`<div class="card-h"><span class="card-t">Daily Commitments</span><span style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--amb)">£${dc.toFixed(2)}</span></div><div style="font-size:11px;color:var(--tx3);margin-top:2px">${costs.map(c=>{const d=c.freq==='daily'?c.amt:c.freq==='weekly'?c.amt/7:c.amt/30;return c.name+' £'+d.toFixed(2)}).join(' · ')}</div><div style="font-size:10px;color:var(--tx3);margin-top:6px">Auto-deducted from your £${(cfg.weeklyBudget/7).toFixed(2)}/day budget → <b style="color:var(--grn)">£${db.toFixed(2)}</b> left for extras</div>`}else{rcEl.style.display='none'}}
   // Week chart
   const ws=weekStart(),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let mx=db||1;const wd=[];
