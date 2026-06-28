@@ -74,6 +74,7 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <div style="font-size:11px;color:var(--tx3);margin-top:4px" id="incWeekly">£0 / week</div>
 </div>
 <div style="padding:0 20px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">INCOME SOURCES</span><span class="card-l" onclick="openModal('addIncModal')">+ Add</span></div>
+<div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn btn-s" style="height:38px;font-size:11px;flex:1" onclick="openModal('addIncModal')">+ Regular</button><button class="btn btn-s" style="height:38px;font-size:11px;flex:1;border-color:rgba(91,168,255,.2);color:var(--blu)" onclick="openModal('oneTimeIncModal')">+ One-time</button></div>
 <div id="incList"><div class="em">No income sources yet. Tap + to add.</div></div></div>
 <div style="height:100px"></div>
 </div>
@@ -110,6 +111,18 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <div style="padding:0 20px"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:4px">12-WEEK PROJECTION</div></div>
 <div class="bar-chart" id="growthChart" style="height:130px"></div>
 <div class="card" style="margin-top:10px"><div style="font-size:12px;color:var(--tx2);line-height:1.6" id="gTip">Add income sources and costs to see projections.</div></div>
+
+<!-- What-if sliders -->
+<div style="padding:14px 20px 0"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px;margin-bottom:12px">WHAT IF? — DRAG TO EXPLORE</div></div>
+<div class="card" style="margin-bottom:10px">
+  <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:600">Monthly Income</span><span style="font-size:14px;font-weight:700;color:var(--grn)" id="slIncVal">£0</span></div>
+  <input type="range" id="slInc" min="0" max="8000" step="50" style="width:100%;accent-color:var(--grn);margin-bottom:12px" oninput="updateSliders()">
+  <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:600">Monthly Expenses</span><span style="font-size:14px;font-weight:700;color:var(--red)" id="slExpVal">£0</span></div>
+  <input type="range" id="slExp" min="0" max="6000" step="50" style="width:100%;accent-color:var(--red);margin-bottom:12px" oninput="updateSliders()">
+  <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:600">Weekly Budget</span><span style="font-size:14px;font-weight:700;color:var(--amb)" id="slBudVal">£0</span></div>
+  <input type="range" id="slBud" min="50" max="500" step="10" style="width:100%;accent-color:var(--amb)" oninput="updateSliders()">
+</div>
+<div class="card" id="slResult" style="text-align:center"></div>
 <div style="height:100px"></div>
 </div>
 
@@ -153,6 +166,36 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <button class="btn btn-s" style="margin-top:8px" onclick="closeModal('setModal')">Close</button>
 </div></div>
 
+<!-- ONE-TIME INCOME -->
+<div class="ov" id="oneTimeIncModal" onclick="if(event.target.id==='oneTimeIncModal')closeModal('oneTimeIncModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">One-Time Income</div><div class="sh-s">Sold something, got a bonus, or any extra money coming in.</div>
+<label class="lbl">What is it?</label><input class="inp" id="otiName" placeholder="e.g. Vinted sale, bonus, refund">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="otiAmt" placeholder="e.g. 85" inputmode="decimal">
+<button class="btn btn-g" onclick="saveOneTimeInc()">Add Income</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('oneTimeIncModal')">Cancel</button>
+</div></div>
+
+<!-- EDIT INCOME -->
+<div class="ov" id="editIncModal" onclick="if(event.target.id==='editIncModal')closeModal('editIncModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Edit Income Source</div>
+<label class="lbl">Source name</label><input class="inp" id="eiName">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="eiAmt" inputmode="decimal">
+<label class="lbl">How often?</label>
+<div class="freq-r"><div class="freq-b" id="eifW" onclick="editIncFreq='weekly';pickEIF()">Weekly</div><div class="freq-b" id="eifB" onclick="editIncFreq='biweekly';pickEIF()">Bi-weekly</div><div class="freq-b" id="eifM" onclick="editIncFreq='monthly';pickEIF()">Monthly</div></div>
+<button class="btn btn-g" onclick="saveEditInc()">Save Changes</button>
+<button class="btn btn-s" style="margin-top:8px;color:var(--red)" onclick="incs.splice(editingIncIdx,1);save();closeModal('editIncModal');renderAll();toast('Deleted')">Delete Source</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('editIncModal')">Cancel</button>
+</div></div>
+
+<!-- EDIT COST -->
+<div class="ov" id="editCostModal" onclick="if(event.target.id==='editCostModal')closeModal('editCostModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">Edit Cost</div>
+<label class="lbl">What is it?</label><input class="inp" id="ecName">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="ecAmt" inputmode="decimal">
+<label class="lbl">How often?</label>
+<div class="freq-r"><div class="freq-b" id="ecfD" onclick="editCostFreq='daily';pickECF()">Daily</div><div class="freq-b" id="ecfW" onclick="editCostFreq='weekly';pickECF()">Weekly</div><div class="freq-b" id="ecfM" onclick="editCostFreq='monthly';pickECF()">Monthly</div></div>
+<button class="btn btn-g" onclick="saveEditCost()">Save Changes</button>
+<button class="btn btn-s" style="margin-top:8px;color:var(--red)" onclick="costs.splice(editingCostIdx,1);save();closeModal('editCostModal');renderAll();toast('Deleted')">Delete Cost</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('editCostModal')">Cancel</button>
+</div></div>
+
 <div class="tabs" id="tabs">
 <button class="ti on" id="t1" onclick="goTab('home')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg><span class="ti-l">Home</span></button>
 <button class="ti" id="t2" onclick="goTab('inc')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="ti-l">Income</span></button>
@@ -183,7 +226,7 @@ function monthlyCostsTotal(){return costs.filter(c=>c.freq==='monthly').reduce((
 function isLastDayOfMonth(){const t=new Date(),tom=new Date(t);tom.setDate(tom.getDate()+1);return tom.getDate()===1}
 function dailyBudget(){if(!cfg)return 0;const weeklyFree=cfg.weeklyBudget-weeklyCosts()-spentWeek();const base=Math.round((weeklyFree/daysLeft())*100)/100;if(isLastDayOfMonth()){return base+monthlyCostsTotal()}return base}
 function leftToday(){return Math.round((dailyBudget()-spentToday())*100)/100}
-function monthlyIncome(){return incs.reduce((s,i)=>{if(i.freq==='weekly')return s+i.amt*4.33;if(i.freq==='biweekly')return s+i.amt*2.17;return s+i.amt},0)}
+function monthlyIncome(){return incs.reduce((s,i)=>{if(i.freq==='weekly')return s+i.amt*4.33;if(i.freq==='biweekly')return s+i.amt*2.17;if(i.freq==='onetime')return s;return s+i.amt},0)}
 function weeklyIncome(){return monthlyIncome()/4.33}
 function monthlyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*30;if(c.freq==='weekly')return s+c.amt*4.33;return s+c.amt},0)+cfg.weeklyBudget*4.33}
 function monthlySavings(){return monthlyIncome()-monthlyCosts()}
@@ -239,7 +282,7 @@ function renderInc(){
   $('incWeekly').textContent='£'+Math.round(wi)+' / week';
   $('incList').innerHTML=incs.length?incs.map((inc,i)=>{
     const monthly=inc.freq==='weekly'?inc.amt*4.33:inc.freq==='biweekly'?inc.amt*2.17:inc.amt;
-    return`<div class="inc-item"><div class="inc-icon" style="background:var(--grn-g)">💰</div><div class="inc-info"><div class="inc-name">${inc.name}</div><div class="inc-freq">£${inc.amt.toFixed(2)} / ${inc.freq} ${inc.consistent?'· consistent':'· varies'}</div></div><div class="inc-amt">£${Math.round(monthly)}<span style="font-size:10px;color:var(--tx3);font-family:Outfit">/mo</span></div><button class="inc-del" onclick="incs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`
+    return`<div class="inc-item" onclick="editInc(${i})" style="cursor:pointer"><div class="inc-icon" style="background:var(--grn-g)">💰</div><div class="inc-info"><div class="inc-name">${inc.name}</div><div class="inc-freq">£${inc.amt.toFixed(2)} / ${inc.freq} ${inc.consistent?'· consistent':'· varies'}</div></div><div class="inc-amt">£${Math.round(monthly)}<span style="font-size:10px;color:var(--tx3);font-family:Outfit">/mo</span></div><button class="inc-del" onclick="event.stopPropagation();incs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`
   }).join(''):'<div class="em">No income sources yet.</div>';
 }
 
@@ -251,7 +294,7 @@ function renderCalc(){
   $('cBar1').style.width=Math.min(100,pct)+'%';$('cBar2').style.width=Math.max(0,100-pct)+'%';
   $('cPct').textContent=mi>0?(pct+'% of income goes to expenses'):'Add income sources to see breakdown';
   // Costs
-  $('costList').innerHTML=costs.length?costs.map((c,i)=>{const cat=CATS.find(x=>x.id===c.cat)||CATS[7];const mo=c.freq==='daily'?c.amt*30:c.freq==='weekly'?c.amt*4.33:c.amt;return`<div class="cost-item"><div class="cost-icon">${cat.i}</div><div class="cost-info"><div class="cost-nm">${c.name}</div><div class="cost-fr">£${c.amt.toFixed(2)} / ${c.freq==='daily'?'day':c.freq==='weekly'?'week':'month'}</div></div><div class="cost-wk">£${Math.round(mo)}<span style="font-size:9px;color:var(--tx3)">/mo</span></div><button class="cost-del" onclick="costs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`}).join(''):'<div class="em">No costs added.</div>';
+  $('costList').innerHTML=costs.length?costs.map((c,i)=>{const cat=CATS.find(x=>x.id===c.cat)||CATS[7];const mo=c.freq==='daily'?c.amt*30:c.freq==='weekly'?c.amt*4.33:c.amt;return`<div class="cost-item" onclick="editCost(${i})" style="cursor:pointer"><div class="cost-icon">${cat.i}</div><div class="cost-info"><div class="cost-nm">${c.name}</div><div class="cost-fr">£${c.amt.toFixed(2)} / ${c.freq==='daily'?'day':c.freq==='weekly'?'week':'month'}</div></div><div class="cost-wk">£${Math.round(mo)}<span style="font-size:9px;color:var(--tx3)">/mo</span></div><button class="cost-del" onclick="event.stopPropagation();costs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`}).join(''):'<div class="em">No costs added.</div>';
   // Actual spending
   $('cActual').textContent='£'+spentMonth().toFixed(2);
   $('cActualSub').textContent='from '+txs.filter(t=>t.d.startsWith(td().slice(0,7))).length+' transactions this month';
@@ -266,6 +309,7 @@ function renderGrowth(){
   for(let i=1;i<=12;i++){cum+=ws;wks.push({w:i,t:Math.round(cum)});if(cum>mx)mx=cum}
   $('growthChart').innerHTML=wks.map(w=>{const h=Math.max(3,Math.round(Math.max(0,w.t)/mx*100));return`<div class="bar-w"><div class="bar-a" style="font-size:7px">${w.t>0?'£'+w.t:''}</div><div class="bar-t" style="height:110px"><div class="bar-f" style="height:${h}%;background:var(--grn)"></div></div><div class="bar-l">${w.w}</div></div>`}).join('');
   const mi=monthlyIncome();
+  initSliders();
   $('gTip').innerHTML=ms>0?`Saving <b style="color:var(--grn)">£${Math.round(ms)}/month</b> (${Math.round(ms/mi*100)}% of income). In a year that's <b style="color:var(--grn)">£${Math.round(ms*12).toLocaleString()}</b>.`:ms===0?'Breaking even. Try cutting one daily cost to start saving.':'<span style="color:var(--red)">Spending more than earning.</span> Review costs in Calculator.';
 }
 
@@ -281,6 +325,36 @@ function saveInc(){const n=$('incName').value.trim(),a=parseFloat($('incAmt').va
 // Costs
 function pickCF(){['cfD','cfW','cfM'].forEach(id=>$(id).classList.remove('on'));$({daily:'cfD',weekly:'cfW',monthly:'cfM'}[costFreq]).classList.add('on')}
 function saveCost(){const n=$('costName').value.trim(),a=parseFloat($('costAmt').value);if(!n)return toast('Name this cost');if(!a||a<=0)return toast('Enter amount');costs.push({name:n,amt:Math.round(a*100)/100,freq:costFreq,cat:costCat});save();closeModal('addCostModal');$('costName').value='';$('costAmt').value='';renderAll();toast('✓ '+n+' added')}
+
+
+// ── One-time income ──
+function saveOneTimeInc(){const n=$('otiName').value.trim(),a=parseFloat($('otiAmt').value);if(!n)return toast('Name it');if(!a||a<=0)return toast('Enter amount');incs.push({name:n+'  (one-time)',amt:Math.round(a*100)/100,freq:'onetime',consistent:false});save();closeModal('oneTimeIncModal');$('otiName').value='';$('otiAmt').value='';renderAll();toast('✓ +£'+a.toFixed(2)+' added')}
+
+// ── Edit income ──
+let editingIncIdx=-1,editIncFreq='weekly';
+function editInc(i){editingIncIdx=i;const inc=incs[i];$('eiName').value=inc.name;$('eiAmt').value=inc.amt;editIncFreq=inc.freq==='onetime'?'monthly':inc.freq;pickEIF();openModal('editIncModal')}
+function pickEIF(){['eifW','eifB','eifM'].forEach(id=>$(id).classList.remove('on'));$({weekly:'eifW',biweekly:'eifB',monthly:'eifM'}[editIncFreq]).classList.add('on')}
+function saveEditInc(){const n=$('eiName').value.trim(),a=parseFloat($('eiAmt').value);if(!n||!a)return toast('Fill in all fields');incs[editingIncIdx]={name:n,amt:Math.round(a*100)/100,freq:editIncFreq,consistent:incs[editingIncIdx].consistent};save();closeModal('editIncModal');renderAll();toast('✓ Updated')}
+
+// ── Edit cost ──
+let editingCostIdx=-1,editCostFreq='daily';
+function editCost(i){editingCostIdx=i;const c=costs[i];$('ecName').value=c.name;$('ecAmt').value=c.amt;editCostFreq=c.freq;pickECF();openModal('editCostModal')}
+function pickECF(){['ecfD','ecfW','ecfM'].forEach(id=>$(id).classList.remove('on'));$({daily:'ecfD',weekly:'ecfW',monthly:'ecfM'}[editCostFreq]).classList.add('on')}
+function saveEditCost(){const n=$('ecName').value.trim(),a=parseFloat($('ecAmt').value);if(!n||!a)return toast('Fill in all fields');costs[editingCostIdx]={name:n,amt:Math.round(a*100)/100,freq:editCostFreq,cat:costs[editingCostIdx].cat};save();closeModal('editCostModal');renderAll();toast('✓ Updated')}
+
+// ── What-if sliders ──
+function initSliders(){const mi=monthlyIncome(),mc=monthlyCosts();$('slInc').value=Math.round(mi);$('slExp').value=Math.round(mc);$('slBud').value=cfg?cfg.weeklyBudget:120;updateSliders()}
+function updateSliders(){
+  const inc=+$('slInc').value,exp=+$('slExp').value,bud=+$('slBud').value;
+  $('slIncVal').textContent='£'+inc.toLocaleString();
+  $('slExpVal').textContent='£'+exp.toLocaleString();
+  $('slBudVal').textContent='£'+bud;
+  const totalExp=exp;const sav=inc-totalExp;
+  const yr=sav*12;
+  const col=sav>0?'var(--grn)':'var(--red)';
+  const dailyFree=Math.round((bud/7)*100)/100;
+  $('slResult').innerHTML=`<div style="font-family:'Instrument Serif',serif;font-size:36px;color:${col};line-height:1">${sav>=0?'':'−'}£${Math.abs(sav).toLocaleString()}</div><div style="font-size:10px;color:var(--tx3);margin-top:4px">${sav>0?'SAVED':'LOST'} PER MONTH</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px;text-align:center"><div><div style="font-size:16px;font-weight:700;color:${col}">£${Math.abs(Math.round(sav*3)).toLocaleString()}</div><div style="font-size:9px;color:var(--tx3)">3 months</div></div><div><div style="font-size:16px;font-weight:700;color:${col}">£${Math.abs(Math.round(sav*6)).toLocaleString()}</div><div style="font-size:9px;color:var(--tx3)">6 months</div></div><div><div style="font-size:16px;font-weight:700;color:${col}">£${Math.abs(yr).toLocaleString()}</div><div style="font-size:9px;color:var(--tx3)">1 year</div></div></div><div style="margin-top:12px;font-size:11px;color:var(--tx3)">Daily free spend: £${dailyFree.toFixed(2)}</div>`;
+}
 
 function goTab(t){['t1','t2','t3','t4'].forEach(id=>$(id).classList.remove('on'));$({home:'t1',inc:'t2',calc:'t3',growth:'t4'}[t]).classList.add('on');
 $('homeScreen').style.display=t==='home'?'block':'none';$('incScreen').style.display=t==='inc'?'block':'none';
