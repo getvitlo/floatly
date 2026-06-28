@@ -55,12 +55,17 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <!-- HOME -->
 <div class="screen" id="homeScreen">
 <div class="ht"><div><div class="h-hi" id="hHi"></div><div class="h-nm" id="hNm">—</div></div><div class="pill" id="hPill">—</div></div>
+<div style="margin:10px 20px 0;background:linear-gradient(135deg,rgba(46,204,113,.08),rgba(91,168,255,.08));border:1px solid rgba(46,204,113,.15);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between">
+<div><div style="font-size:9px;font-weight:700;color:var(--tx3);letter-spacing:.8px">NET WORTH</div><div style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1;margin-top:4px" id="nwVal">£0</div></div>
+<div style="text-align:right"><div style="font-size:10px;color:var(--tx3)" id="nwChange">—</div><div style="font-size:10px;color:var(--tx3);margin-top:2px" id="nwWeekly">—</div></div>
+</div>
 <div class="ra"><div class="rb"><svg width="210" height="210" viewBox="0 0 210 210"><circle cx="105" cy="105" r="92" fill="none" stroke="rgba(46,204,113,.1)" stroke-width="13"/><circle cx="105" cy="105" r="92" fill="none" stroke="var(--grn)" stroke-width="13" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578" id="r1" style="transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1),stroke .3s"/></svg><div class="rc"><div style="font-size:10px;color:var(--tx3);font-weight:600;letter-spacing:.5px;margin-bottom:2px">LEFT TODAY</div><div class="rn" id="rN">£0</div><div class="rl" id="rL">to spend</div><div class="rs" id="rS"></div></div></div></div>
 <div class="ss"><div class="sc"><div class="sv" id="s1" style="color:var(--red)">£0</div><div class="sl">Today</div></div><div class="sc"><div class="sv" id="s2">£0</div><div class="sl">Free/day</div></div><div class="sc"><div class="sv" id="s3" style="color:var(--grn)">£0</div><div class="sl">Week</div></div><div class="sc"><div class="sv" id="s4" style="color:var(--blu)">£0</div><div class="sl">Monthly</div></div></div>
 <div style="padding:8px 20px 0"><div style="font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.8px">THIS WEEK</div></div>
 <div class="card" id="recurCard" style="display:none;border-color:rgba(240,180,41,.15)"></div>
 <div class="bar-chart" id="weekChart"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 4px"><span style="font-size:13px;font-weight:700">Today</span><span class="card-l" onclick="openModal('addModal')">+ Add</span></div>
+<div style="display:flex;gap:6px;padding:0 20px;margin-bottom:6px"><button class="btn btn-s" style="height:34px;font-size:10px;flex:1" onclick="openModal('addModal')">+ Daily spend</button><button class="btn btn-s" style="height:34px;font-size:10px;flex:1;border-color:rgba(239,83,80,.15);color:var(--red)" onclick="openModal('oneTimeExpModal')">+ One-time expense</button></div>
 <div id="txList"><div class="em">No spending yet.</div></div>
 <div style="height:100px"></div>
 </div>
@@ -166,6 +171,15 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <button class="btn btn-s" style="margin-top:8px" onclick="closeModal('setModal')">Close</button>
 </div></div>
 
+<!-- ONE-TIME EXPENSE -->
+<div class="ov" id="oneTimeExpModal" onclick="if(event.target.id==='oneTimeExpModal')closeModal('oneTimeExpModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">One-Time Expense</div><div class="sh-s">Unexpected bill, repair, or any one-off cost.</div>
+<label class="lbl">What is it?</label><input class="inp" id="oteName" placeholder="e.g. Car repair, dentist, phone screen">
+<label class="lbl">Amount (£)</label><input class="inp" type="number" id="oteAmt" placeholder="e.g. 250" inputmode="decimal">
+<label class="lbl">Category</label><div class="cat-g" id="cg3"></div>
+<button class="btn btn-g" style="background:var(--red);color:#fff" onclick="saveOneTimeExp()">Log Expense</button>
+<button class="btn btn-s" style="margin-top:8px" onclick="closeModal('oneTimeExpModal')">Cancel</button>
+</div></div>
+
 <!-- ONE-TIME INCOME -->
 <div class="ov" id="oneTimeIncModal" onclick="if(event.target.id==='oneTimeIncModal')closeModal('oneTimeIncModal')"><div class="sh"><div class="sh-h"></div><div class="sh-t">One-Time Income</div><div class="sh-s">Sold something, got a bonus, or any extra money coming in.</div>
 <label class="lbl">What is it?</label><input class="inp" id="otiName" placeholder="e.g. Vinted sale, bonus, refund">
@@ -231,12 +245,12 @@ function weeklyIncome(){return monthlyIncome()/4.33}
 function monthlyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*30;if(c.freq==='weekly')return s+c.amt*4.33;return s+c.amt},0)+cfg.weeklyBudget*4.33}
 function monthlySavings(){return monthlyIncome()-monthlyCosts()}
 
-function saveSetup(){const n=$('sName').value.trim(),b=+$('sBudget').value;if(!n)return toast('Name?');if(!b||b<10)return toast('Min £10');cfg={name:n,weeklyBudget:b};save();$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
+function saveSetup(){const n=$('sName').value.trim(),b=+$('sBudget').value;if(!n)return toast('Name?');if(!b||b<10)return toast('Min £10');cfg={name:n,weeklyBudget:b};save();localStorage.setItem('f_lastWeek',weekStart().toISOString().split('T')[0]);setNetWorth(0);$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
 
 function renderAll(){renderHome();renderInc();renderCalc();renderGrowth()}
 
 function renderHome(){
-  if(!cfg)return;const h=new Date().getHours();
+  if(!cfg)return;checkWeeklyRollover();const h=new Date().getHours();
   $('hHi').textContent=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
   $('hNm').textContent=cfg.name;
   const dn=Math.floor((new Date()-weekStart())/864e5)+1;
@@ -266,6 +280,7 @@ function renderHome(){
       else{html+=`<div style="margin-top:4px">These only affect your budget on the last day of the month</div>`}
       html+=`</div>`}
     rcEl.innerHTML=html}else{rcEl.style.display='none'}}
+  renderNetWorth();
   // Week chart
   const ws=weekStart(),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let mx=db||1;const wd=[];
@@ -314,7 +329,7 @@ function renderGrowth(){
 }
 
 // Tx
-function renderCG(id,sel){$(id).innerHTML=CATS.map(c=>`<div class="cat-o ${c.id===sel?'on':''}" onclick="${id==='cg1'?'selCat':'costCat'}='${c.id}';renderCG('${id}','${c.id}')"><div class="cat-o-i">${c.i}</div><div class="cat-o-l">${c.l}</div></div>`).join('')}
+function renderCG(id,sel){const varName=id==='cg1'?'selCat':id==='cg2'?'costCat':'oteCat';$(id).innerHTML=CATS.map(c=>`<div class="cat-o ${c.id===sel?'on':''}" onclick="${varName}='${c.id}';renderCG('${id}','${c.id}')"><div class="cat-o-i">${c.i}</div><div class="cat-o-l">${c.l}</div></div>`).join('')}
 function saveTx(){const a=parseFloat($('txAmt').value),n=$('txNote').value.trim();if(!a||a<=0)return toast('Enter amount');txs.push({a:Math.round(a*100)/100,note:n,cat:selCat,d:td(),ts:Date.now()});save();closeModal('addModal');$('txAmt').value='';$('txNote').value='';renderAll();toast('✓ -£'+a.toFixed(2))}
 
 // Income
@@ -327,8 +342,45 @@ function pickCF(){['cfD','cfW','cfM'].forEach(id=>$(id).classList.remove('on'));
 function saveCost(){const n=$('costName').value.trim(),a=parseFloat($('costAmt').value);if(!n)return toast('Name this cost');if(!a||a<=0)return toast('Enter amount');costs.push({name:n,amt:Math.round(a*100)/100,freq:costFreq,cat:costCat});save();closeModal('addCostModal');$('costName').value='';$('costAmt').value='';renderAll();toast('✓ '+n+' added')}
 
 
+// ── Net Worth ──
+function getNetWorth(){return parseFloat(localStorage.getItem('f_nw'))||0}
+function setNetWorth(v){localStorage.setItem('f_nw',JSON.stringify(v))}
+function checkWeeklyRollover(){
+  const lastCheck=localStorage.getItem('f_lastWeek');
+  const thisWeek=weekStart().toISOString().split('T')[0];
+  if(lastCheck&&lastCheck!==thisWeek){
+    // New week — calculate savings from last week
+    const lastWS=new Date(lastCheck);const lastWE=new Date(lastWS);lastWE.setDate(lastWE.getDate()+7);
+    const lws=lastWS.toISOString().split('T')[0],lwe=lastWE.toISOString().split('T')[0];
+    const lastWeekSpent=txs.filter(t=>t.d>=lws&&t.d<lwe&&!t.oneTime).reduce((s,t)=>s+t.a,0);
+    const saved=cfg.weeklyBudget-weeklyCosts()-lastWeekSpent;
+    if(saved>0){const nw=getNetWorth()+saved;setNetWorth(nw)}
+  }
+  localStorage.setItem('f_lastWeek',thisWeek);
+}
+function renderNetWorth(){
+  const nw=getNetWorth();
+  const nwEl=$('nwVal');
+  nwEl.textContent=(nw>=0?'':'−')+'£'+Math.abs(Math.round(nw)).toLocaleString();
+  nwEl.style.color=nw>=0?'var(--grn)':'var(--red)';
+  // This week's projected savings
+  const projected=cfg.weeklyBudget-weeklyCosts()-spentWeek();
+  const changeEl=$('nwChange');
+  changeEl.textContent=(projected>=0?'+':'')+'£'+Math.round(projected)+' this week';
+  changeEl.style.color=projected>=0?'var(--grn)':'var(--red)';
+  const wSav=cfg.weeklyBudget-weeklyCosts();
+  $('nwWeekly').textContent='Saving ~£'+Math.max(0,Math.round(wSav))+'/wk';
+}
+
+// ── One-time expense ──
+let oteCat='other';
+function saveOneTimeExp(){const n=$('oteName').value.trim(),a=parseFloat($('oteAmt').value);if(!n)return toast('Name it');if(!a||a<=0)return toast('Enter amount');
+  txs.push({a:Math.round(a*100)/100,note:n+' (one-time)',cat:oteCat,d:td(),ts:Date.now(),oneTime:true});
+  const nw=getNetWorth()-a;setNetWorth(nw);
+  save();closeModal('oneTimeExpModal');$('oteName').value='';$('oteAmt').value='';renderAll();toast('✓ −£'+a.toFixed(2)+' expense logged')}
+
 // ── One-time income ──
-function saveOneTimeInc(){const n=$('otiName').value.trim(),a=parseFloat($('otiAmt').value);if(!n)return toast('Name it');if(!a||a<=0)return toast('Enter amount');incs.push({name:n+'  (one-time)',amt:Math.round(a*100)/100,freq:'onetime',consistent:false});save();closeModal('oneTimeIncModal');$('otiName').value='';$('otiAmt').value='';renderAll();toast('✓ +£'+a.toFixed(2)+' added')}
+function saveOneTimeInc(){const n=$('otiName').value.trim(),a=parseFloat($('otiAmt').value);if(!n)return toast('Name it');if(!a||a<=0)return toast('Enter amount');incs.push({name:n+' (one-time)',amt:Math.round(a*100)/100,freq:'onetime',consistent:false});const nw=getNetWorth()+a;setNetWorth(nw);save();closeModal('oneTimeIncModal');$('otiName').value='';$('otiAmt').value='';renderAll();toast('✓ +£'+a.toFixed(2)+' added')}
 
 // ── Edit income ──
 let editingIncIdx=-1,editIncFreq='weekly';
@@ -361,7 +413,7 @@ $('homeScreen').style.display=t==='home'?'block':'none';$('incScreen').style.dis
 $('calcScreen').style.display=t==='calc'?'block':'none';$('growthScreen').style.display=t==='growth'?'block':'none';renderAll()}
 
 load();if(cfg){$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
-renderCG('cg1','food');renderCG('cg2','food');
+renderCG('cg1','food');renderCG('cg2','food');renderCG('cg3','other');
 </script>
 </body>
 </html>
