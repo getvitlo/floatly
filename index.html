@@ -161,6 +161,15 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 <label class="lbl">Amount (£)</label><input class="inp" type="number" id="incAmt" placeholder="e.g. 2200" inputmode="decimal">
 <label class="lbl">How often?</label>
 <div class="freq-r"><div class="freq-b on" id="ifW" onclick="incFreq='weekly';pickIF()">Weekly</div><div class="freq-b" id="ifB" onclick="incFreq='biweekly';pickIF()">Bi-weekly</div><div class="freq-b" id="ifM" onclick="incFreq='monthly';pickIF()">Monthly</div></div>
+<label class="lbl">Pay day (for auto-logging)</label>
+<div style="display:flex;gap:4px;margin-bottom:14px;flex-wrap:wrap" id="payDayPicker">
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" onclick="incPayDay=1;pickPD()">Mon</div>
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" onclick="incPayDay=2;pickPD()">Tue</div>
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" onclick="incPayDay=3;pickPD()">Wed</div>
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" id="pdThu" onclick="incPayDay=4;pickPD()">Thu</div>
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" onclick="incPayDay=5;pickPD()">Fri</div>
+<div class="freq-b" style="flex:1;min-width:40px;padding:8px 2px;font-size:10px" onclick="incPayDay=0;pickPD()">None</div>
+</div>
 <label class="lbl">Consistent?</label>
 <div class="freq-r" style="margin-bottom:14px"><div class="freq-b on" id="icY" onclick="incConsistent=true;pickIC()">Yes, regular</div><div class="freq-b" id="icN" onclick="incConsistent=false;pickIC()">Varies</div></div>
 <button class="btn btn-g" onclick="saveInc()">Add Source</button>
@@ -244,13 +253,13 @@ input,button{font-family:'Outfit',sans-serif;outline:none}
 
 <script>
 const CATS=[{id:'food',i:'🍔',l:'Food'},{id:'coffee',i:'☕',l:'Coffee'},{id:'fuel',i:'⛽',l:'Fuel'},{id:'transport',i:'🚗',l:'Transport'},{id:'shopping',i:'🛍️',l:'Shopping'},{id:'drinks',i:'🍺',l:'Drinks'},{id:'subs',i:'📱',l:'Subs'},{id:'other',i:'📦',l:'Other'}];
-let cfg=null,txs=[],incs=[],costs=[],incLog=[],incViewMonth=new Date().getMonth(),incViewYear=new Date().getFullYear(),selCat='food',costCat='food',costFreq='daily',incFreq='weekly',incConsistent=true;
+let cfg=null,txs=[],incs=[],costs=[],incLog=[],incViewMonth=new Date().getMonth(),incViewYear=new Date().getFullYear(),selCat='food',costCat='food',costFreq='daily',incFreq='weekly',incConsistent=true,incPayDay=0;
 const $=id=>document.getElementById(id),td=()=>new Date().toISOString().split('T')[0];
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
 function openModal(id){$(id).classList.add('open')}
 function closeModal(id){$(id).classList.remove('open')}
 function save(){localStorage.setItem('f_c',JSON.stringify(cfg));localStorage.setItem('f_tx',JSON.stringify(txs));localStorage.setItem('f_inc',JSON.stringify(incs));localStorage.setItem('f_costs',JSON.stringify(costs));localStorage.setItem('f_inclog',JSON.stringify(incLog))}
-function load(){try{cfg=JSON.parse(localStorage.getItem('f_c'))}catch(e){}try{txs=JSON.parse(localStorage.getItem('f_tx'))||[]}catch(e){}try{incs=JSON.parse(localStorage.getItem('f_inc'))||[]}catch(e){}try{costs=JSON.parse(localStorage.getItem('f_costs'))||[]}catch(e){}}
+function load(){try{cfg=JSON.parse(localStorage.getItem('f_c'))}catch(e){}try{txs=JSON.parse(localStorage.getItem('f_tx'))||[]}catch(e){}try{incs=JSON.parse(localStorage.getItem('f_inc'))||[]}catch(e){}try{costs=JSON.parse(localStorage.getItem('f_costs'))||[]}catch(e){}try{incLog=JSON.parse(localStorage.getItem('f_inclog'))||[]}catch(e){incLog=[]}}
 
 function weekStart(){const n=new Date(),d=n.getDay(),diff=d===0?6:d-1;const w=new Date(n);w.setDate(w.getDate()-diff);w.setHours(0,0,0,0);return w}
 function daysLeft(){return Math.max(1,7-Math.floor((new Date()-weekStart())/(864e5)))}
@@ -332,7 +341,8 @@ function renderInc(){
   const mi=monthlyIncome(),wi=weeklyIncome();
   $('incList').innerHTML=incs.length?incs.map((inc,i)=>{
     const monthly=inc.freq==='weekly'?inc.amt*4.33:inc.freq==='biweekly'?inc.amt*2.17:inc.freq==='onetime'?inc.amt:inc.amt;
-    return`<div class="inc-item" onclick="editInc(${i})" style="cursor:pointer"><div class="inc-icon" style="background:var(--grn-g)">💰</div><div class="inc-info"><div class="inc-name">${inc.name}</div><div class="inc-freq">£${inc.amt.toFixed(2)} / ${inc.freq}${inc.consistent?' · consistent':' · varies'}</div></div><div class="inc-amt">£${Math.round(monthly)}<span style="font-size:10px;color:var(--tx3);font-family:Outfit">/mo</span></div><button class="inc-del" onclick="event.stopPropagation();incs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`
+    const dayNames={1:'Mon',2:'Tue',3:'Wed',4:'Thu',5:'Fri',6:'Sat',0:''};
+    return`<div class="inc-item" onclick="editInc(${i})" style="cursor:pointer"><div class="inc-icon" style="background:var(--grn-g)">💰</div><div class="inc-info"><div class="inc-name">${inc.name}</div><div class="inc-freq">£${inc.amt.toFixed(2)} / ${inc.freq}${inc.consistent?' · consistent':' · varies'}${inc.payDay?' · pays '+dayNames[inc.payDay]:''}</div></div><div class="inc-amt">£${Math.round(monthly)}<span style="font-size:10px;color:var(--tx3);font-family:Outfit">/mo</span></div><button class="inc-del" onclick="event.stopPropagation();incs.splice(${i},1);save();renderAll();toast('Removed')">×</button></div>`
   }).join(''):'<div class="em">No sources defined.</div>';
 }
 function incMonthNav(dir){incViewMonth+=dir;if(incViewMonth>11){incViewMonth=0;incViewYear++}if(incViewMonth<0){incViewMonth=11;incViewYear--}renderInc()}
@@ -371,7 +381,31 @@ function saveTx(){const a=parseFloat($('txAmt').value),n=$('txNote').value.trim(
 // Income
 function pickIF(){['ifW','ifB','ifM'].forEach(id=>$(id).classList.remove('on'));$({weekly:'ifW',biweekly:'ifB',monthly:'ifM'}[incFreq]).classList.add('on')}
 function pickIC(){$('icY').classList.toggle('on',incConsistent);$('icN').classList.toggle('on',!incConsistent)}
-function saveInc(){const n=$('incName').value.trim(),a=parseFloat($('incAmt').value);if(!n)return toast('Name this source');if(!a||a<=0)return toast('Enter amount');incs.push({name:n,amt:Math.round(a*100)/100,freq:incFreq,consistent:incConsistent});save();closeModal('addIncModal');$('incName').value='';$('incAmt').value='';renderAll();toast('✓ '+n+' added')}
+function pickPD(){const btns=$('payDayPicker')?.children;if(btns)Array.from(btns).forEach((b,i)=>{const days=[1,2,3,4,5,0];b.classList.toggle('on',days[i]===incPayDay)})}
+function saveInc(){const n=$('incName').value.trim(),a=parseFloat($('incAmt').value);if(!n)return toast('Name this source');if(!a||a<=0)return toast('Enter amount');incs.push({name:n,amt:Math.round(a*100)/100,freq:incFreq,consistent:incConsistent,payDay:incPayDay});save();closeModal('addIncModal');$('incName').value='';$('incAmt').value='';incPayDay=0;renderAll();toast('✓ '+n+' added')}
+
+// Auto-pay: check if any recurring sources are due today
+function checkAutoPay(){
+  const today=new Date();const dayOfWeek=today.getDay();// 0=Sun,1=Mon,...,4=Thu
+  const todayStr=td();
+  incs.forEach(inc=>{
+    if(!inc.payDay||inc.payDay===0)return;// No auto-pay set
+    if(inc.freq==='onetime')return;
+    if(dayOfWeek!==inc.payDay)return;// Not pay day
+    // Check if already logged today for this source
+    const alreadyLogged=incLog.some(e=>e.d===todayStr&&e.note===inc.name+' (auto)'&&!e.oneTime);
+    if(alreadyLogged)return;
+    // For biweekly, check if logged in last 10 days
+    if(inc.freq==='biweekly'){
+      const tenDaysAgo=new Date();tenDaysAgo.setDate(tenDaysAgo.getDate()-10);
+      const recentLog=incLog.some(e=>e.note===inc.name+' (auto)'&&new Date(e.d+'T12:00:00')>tenDaysAgo);
+      if(recentLog)return;
+    }
+    // Auto-log it
+    incLog.push({a:inc.amt,note:inc.name+' (auto)',d:todayStr,ts:Date.now(),auto:true});
+    save();
+  });
+}
 
 // Costs
 function pickCF(){['cfD','cfW','cfM'].forEach(id=>$(id).classList.remove('on'));$({daily:'cfD',weekly:'cfW',monthly:'cfM'}[costFreq]).classList.add('on')}
@@ -434,7 +468,7 @@ function goTab(t){['t1','t2','t3','t4'].forEach(id=>$(id).classList.remove('on')
 $('homeScreen').style.display=t==='home'?'block':'none';$('incScreen').style.display=t==='inc'?'block':'none';
 $('calcScreen').style.display=t==='calc'?'block':'none';$('growthScreen').style.display=t==='growth'?'block':'none';renderAll()}
 
-load();if(cfg){$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
+load();if(cfg){checkAutoPay();$('setupScreen').classList.remove('active');$('homeScreen').classList.add('active');$('tabs').classList.add('show');$('fab').classList.add('show');renderAll()}
 renderCG('cg1','food');renderCG('cg2','food');renderCG('cg3','other');
 </script>
 </body>
