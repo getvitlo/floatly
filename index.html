@@ -177,9 +177,11 @@ function daysLeft(){return Math.max(1,7-Math.floor((new Date()-weekStart())/(864
 function spentToday(){return txs.filter(t=>t.d===td()).reduce((s,t)=>s+t.a,0)}
 function spentWeek(){const ws=weekStart().toISOString().split('T')[0];return txs.filter(t=>t.d>=ws).reduce((s,t)=>s+t.a,0)}
 function spentMonth(){const m=td().slice(0,7);return txs.filter(t=>t.d.startsWith(m)).reduce((s,t)=>s+t.a,0)}
-function weeklyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*7;if(c.freq==='weekly')return s+c.amt;return s+c.amt/4.33},0)}
-function dailyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt;if(c.freq==='weekly')return s+c.amt/7;return s+c.amt/30},0)}
-function dailyBudget(){if(!cfg)return 0;const weeklyFree=cfg.weeklyBudget-weeklyCosts()-spentWeek();return Math.round((weeklyFree/daysLeft())*100)/100}
+function weeklyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt*7;if(c.freq==='weekly')return s+c.amt;return s},0)}
+function dailyCosts(){return costs.reduce((s,c)=>{if(c.freq==='daily')return s+c.amt;if(c.freq==='weekly')return s+c.amt/7;return s},0)}
+function monthlyCostsTotal(){return costs.filter(c=>c.freq==='monthly').reduce((s,c)=>s+c.amt,0)}
+function isLastDayOfMonth(){const t=new Date(),tom=new Date(t);tom.setDate(tom.getDate()+1);return tom.getDate()===1}
+function dailyBudget(){if(!cfg)return 0;const weeklyFree=cfg.weeklyBudget-weeklyCosts()-spentWeek();const base=Math.round((weeklyFree/daysLeft())*100)/100;if(isLastDayOfMonth()){return base+monthlyCostsTotal()}return base}
 function leftToday(){return Math.round((dailyBudget()-spentToday())*100)/100}
 function monthlyIncome(){return incs.reduce((s,i)=>{if(i.freq==='weekly')return s+i.amt*4.33;if(i.freq==='biweekly')return s+i.amt*2.17;return s+i.amt},0)}
 function weeklyIncome(){return monthlyIncome()/4.33}
@@ -208,7 +210,19 @@ function renderHome(){
   // Recurring costs card
   const dc=dailyCosts(),wc=weeklyCosts();
   const rcEl=$('recurCard');
-  if(rcEl){if(costs.length>0){rcEl.style.display='block';rcEl.innerHTML=`<div class="card-h"><span class="card-t">Daily Commitments</span><span style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--amb)">£${dc.toFixed(2)}</span></div><div style="font-size:11px;color:var(--tx3);margin-top:2px">${costs.map(c=>{const d=c.freq==='daily'?c.amt:c.freq==='weekly'?c.amt/7:c.amt/30;return c.name+' £'+d.toFixed(2)}).join(' · ')}</div><div style="font-size:10px;color:var(--tx3);margin-top:6px">Auto-deducted from your £${(cfg.weeklyBudget/7).toFixed(2)}/day budget → <b style="color:var(--grn)">£${db.toFixed(2)}</b> left for extras</div>`}else{rcEl.style.display='none'}}
+  if(rcEl){if(costs.length>0){rcEl.style.display='block';
+    const dailyWeeklyCosts=costs.filter(c=>c.freq!=='monthly');
+    const monthlyCostsList=costs.filter(c=>c.freq==='monthly');
+    const mTotal=monthlyCostsTotal();
+    const lastDay=isLastDayOfMonth();
+    let html=`<div class="card-h"><span class="card-t">Daily Commitments</span><span style="font-family:'Instrument Serif',serif;font-size:18px;color:var(--amb)">£${dc.toFixed(2)}</span></div>`;
+    if(dailyWeeklyCosts.length>0){html+=`<div style="font-size:11px;color:var(--tx3);margin-top:2px">${dailyWeeklyCosts.map(c=>{const d=c.freq==='daily'?c.amt:c.amt/7;return c.name+' £'+d.toFixed(2)+'/day'}).join(' · ')}</div>`}
+    html+=`<div style="font-size:10px;color:var(--tx3);margin-top:6px">Auto-deducted → <b style="color:var(--grn)">£${db.toFixed(2)}</b> left for extras today</div>`;
+    if(monthlyCostsList.length>0){html+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx3)"><span style="font-weight:700;color:var(--tx)">Monthly bills:</span> ${monthlyCostsList.map(c=>c.name+' £'+c.amt.toFixed(0)).join(' · ')}`;
+      if(lastDay){html+=`<div style="margin-top:4px;color:var(--amb);font-weight:600">📅 Monthly bills due today — budget includes £${mTotal.toFixed(0)} for them</div>`}
+      else{html+=`<div style="margin-top:4px">These only affect your budget on the last day of the month</div>`}
+      html+=`</div>`}
+    rcEl.innerHTML=html}else{rcEl.style.display='none'}}
   // Week chart
   const ws=weekStart(),days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let mx=db||1;const wd=[];
