@@ -422,7 +422,7 @@ async function obNext(){
     const btn=$('obBtn');btn.disabled=true;btn.textContent='🤖 Analysing...';
     const b=bmr();
     try{
-      const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:`You are a nutrition and fitness coach. A new user just signed up and described their goals.
+      const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`You are a nutrition and fitness coach. A new user just signed up and described their goals.
 
 Their stats: ${ob.name}, ${ob.age}yo ${ob.sex}, ${ob.weight}kg, ${ob.height}cm, BMR ${b} kcal, TDEE ~${Math.round(b*1.3)} kcal.
 
@@ -568,7 +568,7 @@ async function aiF(content){lastAIContent=content;$('fR').style.display='block';
   let stageI=0;const stages=['Identifying food…','Estimating portions…','Calculating macros…'];
   const stageTimer=setInterval(()=>{stageI=(stageI+1)%stages.length;const el=$('aiStage');if(el)el.textContent=stages[stageI];else clearInterval(stageTimer)},1800);$('eA').style.display='none';$('cB').style.display='none';
   try{
-    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content}]})});
+    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content}]})});
     if(!resp.ok){clearInterval(stageTimer);
       const errText=await resp.text().catch(()=>'Unknown error');
       let friendly='AI server error ('+resp.status+')';
@@ -627,7 +627,7 @@ async function saveMeal(){const n=$('fN').value.trim(),k=+$('fK').value;if(!n)re
 function resetF(){$('fR').style.display='none';$('eA').style.display='none';$('cB').style.display='none';$('pD').innerHTML='<div style="font-size:44px;opacity:.25">📷</div><div style="font-size:13px;font-weight:600;color:var(--tx3)">Tap to photograph your meal</div>';if($('dI'))$('dI').value='';['fN','fK','fPr','fCr','fFt','fW'].forEach(id=>{if($(id))$(id).value=''});aiRes=null;photoB64=null;editingMealId=null;$('fp').style.display='block';const saveBtn=$('eA')?.querySelector('.btn-g');if(saveBtn)saveBtn.textContent='Log Meal'}
 function eT(t,el){document.querySelectorAll('#exModal .tb').forEach(b=>b.classList.remove('on'));el.classList.add('on');$('eM').style.display=t==='man'?'block':'none';$('eSS').style.display=t==='ss'?'block':'none'}
 async function saveEx(){const c=+$('eCIn').value,s=+$('eSIn').value||0;if(!c||c<1)return toast('Enter calories burned');const{data:ex}=await sb.from('workouts').select('id').eq('user_id',user.id).eq('date',td()).maybeSingle();const p={user_id:user.id,date:td(),calories_burned:c,workout_type:'Exercise',duration_minutes:0,effort:5};if(s>0)p.steps=s;const{error}=ex?await sb.from('workouts').update(p).eq('id',ex.id):await sb.from('workouts').insert(p);if(error){toast('Error: '+error.message);console.error(error);return}closeModal('exModal');await loadEx();renderHome();renderEx();toast('✓ '+c+' kcal logged')}
-async function onESS(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async ev=>{const b64=ev.target.result.split(',')[1];$('eSSD').innerHTML=`<img src="${ev.target.result}">`;$('eSSR').style.display='block';$('eSSR').innerHTML='<div class="lr"><div class="sp"></div><span style="color:var(--tx3);font-size:12px">Reading screenshot…</span></div>';try{const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:f.type,data:b64}},{type:'text',text:'Extract calories burned and steps from this fitness screenshot. JSON only: {"calories_burned":number,"steps":number,"summary":"one sentence"}'}]}]})});const d=await resp.json();const t=d.content?.map(c=>c.text||'').join('')||'';const mt=t.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);if(!mt)throw 0;exSSdata=JSON.parse(mt[0]);$('eSSR').innerHTML=`<div style="background:var(--grn-g);border-radius:11px;padding:12px;margin:10px 0;border:1px solid rgba(46,204,113,.2)"><div style="font-size:12px;font-weight:700;color:var(--grn)">✓ ${exSSdata.calories_burned} kcal${exSSdata.steps?' · '+exSSdata.steps.toLocaleString()+' steps':''}</div><div style="font-size:11px;color:var(--tx2);margin-top:3px">${exSSdata.summary||''}</div></div>`;$('eSSB').style.display='block'}catch(e){$('eSSR').innerHTML='<div style="padding:12px;text-align:center;color:var(--tx3);font-size:12px">Could not read. Enter manually.</div>'}};r.readAsDataURL(f)}
+async function onESS(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async ev=>{const b64=ev.target.result.split(',')[1];$('eSSD').innerHTML=`<img src="${ev.target.result}">`;$('eSSR').style.display='block';$('eSSR').innerHTML='<div class="lr"><div class="sp"></div><span style="color:var(--tx3);font-size:12px">Reading screenshot…</span></div>';try{const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:f.type,data:b64}},{type:'text',text:'Extract calories burned and steps from this fitness screenshot. JSON only: {"calories_burned":number,"steps":number,"summary":"one sentence"}'}]}]})});const d=await resp.json();const t=d.content?.map(c=>c.text||'').join('')||'';const mt=t.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);if(!mt)throw 0;exSSdata=JSON.parse(mt[0]);$('eSSR').innerHTML=`<div style="background:var(--grn-g);border-radius:11px;padding:12px;margin:10px 0;border:1px solid rgba(46,204,113,.2)"><div style="font-size:12px;font-weight:700;color:var(--grn)">✓ ${exSSdata.calories_burned} kcal${exSSdata.steps?' · '+exSSdata.steps.toLocaleString()+' steps':''}</div><div style="font-size:11px;color:var(--tx2);margin-top:3px">${exSSdata.summary||''}</div></div>`;$('eSSB').style.display='block'}catch(e){$('eSSR').innerHTML='<div style="padding:12px;text-align:center;color:var(--tx3);font-size:12px">Could not read. Enter manually.</div>'}};r.readAsDataURL(f)}
 async function saveESSx(){
   if(!exSSdata)return;
   const c=exSSdata.calories_burned||0,s=exSSdata.steps||0;
@@ -689,7 +689,7 @@ async function runCoach(){
   const btn=$('coachBtn');btn.disabled=true;btn.innerHTML='<div class="sp" style="width:16px;height:16px;border-width:2px"></div> Thinking...';
   const b=bmr(),w=profile?.weight_kg||'?',h=profile?.height_cm||'?',a=profile?.age||'?',s=profile?.sex||'?',bf=profile?.body_fat_pct||'unknown';
   try{
-    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:`You are a nutrition and fitness coach. A user wants help setting their calorie goals.
+    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:`You are a nutrition and fitness coach. A user wants help setting their calorie goals.
 
 Their stats: Weight ${w}kg, Height ${h}cm, Age ${a}, Sex ${s}, Body fat ${bf}%, Current BMR ${b} kcal.
 
@@ -880,7 +880,7 @@ async function loadCoachBrief(){
   const el=$('coachBrief');
   const ctx=await getCoachContext();
   try{
-    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:`You are a chill, knowledgeable personal trainer giving a daily brief. Sound like a mate who knows their stuff, not a medical textbook. Never be alarmist about food intake. Focus on practical next steps.
+    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:`You are a chill, knowledgeable personal trainer giving a daily brief. Sound like a mate who knows their stuff, not a medical textbook. Never be alarmist about food intake. Focus on practical next steps.
 
 ${ctx.contextBlock}
 
@@ -907,7 +907,7 @@ async function sendChat(){
   msgs.scrollTop=msgs.scrollHeight;
   const ctx=await getCoachContext();
   try{
-    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:`You are a personal trainer chatting with your client. Sound like a knowledgeable mate — direct, warm, zero waffle. Use their data but don't lecture. 2-3 sentences max.
+    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,messages:[{role:'user',content:`You are a personal trainer chatting with your client. Sound like a knowledgeable mate — direct, warm, zero waffle. Use their data but don't lecture. 2-3 sentences max.
 
 ${ctx.contextBlock}
 
@@ -1099,6 +1099,20 @@ function animNum(el,target){
   function step(t){const p=Math.min(1,(t-t0)/dur);const eased=1-Math.pow(1-p,3);el.textContent=Math.round(start+(target-start)*eased);if(p<1)requestAnimationFrame(step)}
   requestAnimationFrame(step);
 }
+
+// Diagnostic — run testProxy() in browser console to check connection
+async function testProxy(){
+  console.log('Testing proxy at',PX,'...');
+  try{
+    const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:50,messages:[{role:'user',content:'Reply with just the word OK'}]})});
+    console.log('Status:',resp.status);
+    const body=await resp.text();
+    console.log('Response:',body.slice(0,300));
+    if(resp.ok){const d=JSON.parse(body);if(d.content)console.log('✅ PROXY WORKS — AI replied:',d.content[0]?.text);else if(d.error)console.log('❌ API ERROR:',d.error.message)}
+    else console.log('❌ HTTP ERROR:',resp.status,body.slice(0,200));
+  }catch(e){console.log('❌ FETCH FAILED:',e.message,'— proxy may be down or CORS issue')}
+}
+
 async function init(){const{data:{session}}=await sb.auth.getSession();if(session?.user){user=session.user;await boot()}sb.auth.onAuthStateChange(async(_,s)=>{if(s?.user){user=s.user;await boot()}})}
 async function boot(){await loadProfile();if(!profile?.onboarded){show('obScreen');renderOb();return}await Promise.all([loadFood(),loadEx()]);show('homeScreen');showUI();renderHome();renderEx()}
 init();
