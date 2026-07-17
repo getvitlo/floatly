@@ -539,30 +539,8 @@ async function onFP(e){const f=e.target.files[0];if(!f)return;
   const previewURL=URL.createObjectURL(f);$('pD').innerHTML=`<img src="${previewURL}">`;
   // Compress for API (1200px wide, 70% quality JPEG)
   photoB64=await compressImg(f);
-  if(!photoB64){toast('Could not process image');return}const weightVal=$('fW')?.value;await aiF([{type:'image',source:{type:'base64',media_type:'image/jpeg',data:photoB64}},{type:'text',text:`You are an expert nutritionist analysing a food photo. Work step by step:
-
-1. IDENTIFY every distinct food item visible. Count individual pieces (e.g. "4 sausages" not "sausages"). Note cooking method — fried, grilled, roasted, boiled — as it changes calories significantly.
-2. ESTIMATE portion sizes using visual references: plate diameter (~26cm dinner plate), cutlery for scale, food depth/thickness. Estimate weight in grams per item.${weightVal?' The user says total food weight is '+weightVal+'g — distribute this across items proportionally and use it to anchor your estimates.':''}
-3. ACCOUNT for hidden calories: cooking oil (fried items +10-15%), butter on bread/veg, dressings, sauces, cheese melted into dishes.
-4. USE UK portion norms and UK food brands where recognisable (e.g. Heinz beans, Warburtons bread, supermarket meal deals).
-5. CALCULATE macros per item, then sum. Be precise — use standard nutritional values per 100g and multiply by your weight estimates.
-
-Common reference values per 100g: chicken breast 165kcal/31p, sausage 300kcal/12p, white rice cooked 130kcal/2.7p, pasta cooked 160kcal/5.8p, bread slice(40g) 100kcal/3.5p, egg(50g) 72kcal/6.3p, cheddar 416kcal/25p, chips 270kcal/3.3p, beans 84kcal/4.7p.
-
-Return JSON only, no other text:
-{"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item: name, estimated weight, kcal each — one line per item"}`}])}
-async function anDesc(){const t=$('dI').value.trim();if(!t)return toast('Describe what you ate');const weightVal=$('fW')?.value;await aiF([{type:'text',text:`You are an expert nutritionist. The user describes their meal: "${t}"${weightVal?' (total weight: '+weightVal+'g)':''}
-
-Work step by step:
-1. Parse every item and quantity mentioned. If quantity is ambiguous, assume typical UK portions.
-2. Account for cooking methods mentioned (fried adds oil calories, buttered adds ~35kcal per slice).
-3. Use UK brands and portion norms where relevant.
-4. Calculate macros per item then sum.
-
-Reference per 100g: chicken breast 165kcal/31p, sausage 300kcal/12p, cooked rice 130kcal/2.7p, cooked pasta 160kcal/5.8p, bread slice(40g) 100kcal/3.5p, egg 72kcal/6.3p each, cheddar 416kcal/25p, chips 270kcal/3.3p.
-
-Return JSON only:
-{"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item with estimated kcal each"}`}])}
+  if(!photoB64){toast('Could not process image');return}const weightVal=$('fW')?.value;await aiF([{type:'image',source:{type:'base64',media_type:'image/jpeg',data:photoB64}},{type:'text',text:'You are an expert nutritionist analysing a food photo. Work step by step: 1) IDENTIFY every distinct food item visible. Count individual pieces. Note cooking method. 2) ESTIMATE portion sizes using plate diameter (~26cm) and cutlery for scale.'+(weightVal?' Total food weight: '+weightVal+'g — distribute across items.':'')+' 3) ACCOUNT for hidden calories: cooking oil, butter, dressings, sauces, melted cheese. 4) USE UK portion norms and brands. 5) CALCULATE macros per item then sum. Reference per 100g: chicken breast 165kcal/31p, sausage 300kcal/12p, rice cooked 130kcal/2.7p, pasta cooked 160kcal/5.8p, bread slice(40g) 100kcal/3.5p, egg(50g) 72kcal/6.3p, cheddar 416kcal/25p, chips 270kcal/3.3p, beans 84kcal/4.7p. Return JSON only: {"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item: name, estimated weight, kcal each"}'}])}
+async function anDesc(){const t=$('dI').value.trim();if(!t)return toast('Describe what you ate');const weightVal=$('fW')?.value;await aiF([{type:'text',text:'You are an expert nutritionist. The user describes their meal: "'+t+'"'+(weightVal?' (total weight: '+weightVal+'g)':'')+'. Work step by step: 1) Parse every item and quantity. If ambiguous, assume typical UK portions. 2) Account for cooking methods (fried adds oil, buttered adds ~35kcal/slice). 3) Use UK brands and norms. 4) Calculate macros per item then sum. Reference per 100g: chicken breast 165kcal/31p, sausage 300kcal/12p, rice cooked 130kcal/2.7p, pasta cooked 160kcal/5.8p, bread slice(40g) 100kcal/3.5p, egg(50g) 72kcal/6.3p, cheddar 416kcal/25p, chips 270kcal/3.3p. Return JSON only: {"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item with estimated kcal each"}'}])}
 async function doCorr(){const c=$('cIn').value.trim();if(!c||!aiRes)return;await aiF([{type:'text',text:`Original: "${aiRes.meal_name}" (${aiRes.calories} kcal). Correction: "${c}". Recalculate. JSON only:\n{"meal_name":"name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"breakdown":"updated breakdown"}`}]);$('cIn').value=''}
 async function aiF(content){lastAIContent=content;$('fR').style.display='block';$('fR').innerHTML='<div class="lr"><div class="sp"></div><span style="color:var(--tx3);font-size:12px" id="aiStage">Identifying food…</span></div>';
   let stageI=0;const stages=['Identifying food…','Estimating portions…','Calculating macros…'];
