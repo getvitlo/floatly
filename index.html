@@ -519,7 +519,27 @@ function editMeal(id){
   openModal('foodModal');
 }
 function fT(t,el){document.querySelectorAll('#foodModal .tb').forEach(b=>b.classList.remove('on'));el.classList.add('on');$('fp').style.display=t==='photo'?'block':'none';$('fd').style.display=t==='desc'?'block':'none';$('fm').style.display=t==='man'?'block':'none';if(t==='man'){$('eA').style.display='block';$('fR').style.display='none';$('cB').style.display='none'}}
-async function onFP(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async ev=>{photoB64=ev.target.result.split(',')[1];$('pD').innerHTML=`<img src="${ev.target.result}">`;const weightVal=$('fW')?.value;await aiF([{type:'image',source:{type:'base64',media_type:f.type,data:photoB64}},{type:'text',text:`You are an expert nutritionist analysing a food photo. Work step by step:
+
+function compressImg(file,maxW=1200,quality=0.7){return new Promise((resolve)=>{
+  const img=new Image();const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    URL.revokeObjectURL(url);
+    let w=img.width,h=img.height;
+    if(w>maxW){h=Math.round(h*(maxW/w));w=maxW}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+    const b64=canvas.toDataURL('image/jpeg',quality).split(',')[1];
+    resolve(b64);
+  };
+  img.onerror=()=>resolve(null);
+  img.src=url;
+})}
+async function onFP(e){const f=e.target.files[0];if(!f)return;
+  // Show preview immediately
+  const previewURL=URL.createObjectURL(f);$('pD').innerHTML=`<img src="${previewURL}">`;
+  // Compress for API (1200px wide, 70% quality JPEG)
+  photoB64=await compressImg(f);
+  if(!photoB64){toast('Could not process image');return}const weightVal=$('fW')?.value;await aiF([{type:'image',source:{type:'base64',media_type:'image/jpeg',data:photoB64}},{type:'text',text:`You are an expert nutritionist analysing a food photo. Work step by step:
 
 1. IDENTIFY every distinct food item visible. Count individual pieces (e.g. "4 sausages" not "sausages"). Note cooking method — fried, grilled, roasted, boiled — as it changes calories significantly.
 2. ESTIMATE portion sizes using visual references: plate diameter (~26cm dinner plate), cutlery for scale, food depth/thickness. Estimate weight in grams per item.${weightVal?' The user says total food weight is '+weightVal+'g — distribute this across items proportionally and use it to anchor your estimates.':''}
@@ -530,7 +550,7 @@ async function onFP(e){const f=e.target.files[0];if(!f)return;const r=new FileRe
 Common reference values per 100g: chicken breast 165kcal/31p, sausage 300kcal/12p, white rice cooked 130kcal/2.7p, pasta cooked 160kcal/5.8p, bread slice(40g) 100kcal/3.5p, egg(50g) 72kcal/6.3p, cheddar 416kcal/25p, chips 270kcal/3.3p, beans 84kcal/4.7p.
 
 Return JSON only, no other text:
-{"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item: name, estimated weight, kcal each — one line per item"}`}])};r.readAsDataURL(f)}
+{"meal_name":"concise name","calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"fibre_g":number,"sugar_g":number,"confidence":"high/medium/low","breakdown":"item-by-item: name, estimated weight, kcal each — one line per item"}`}])}
 async function anDesc(){const t=$('dI').value.trim();if(!t)return toast('Describe what you ate');const weightVal=$('fW')?.value;await aiF([{type:'text',text:`You are an expert nutritionist. The user describes their meal: "${t}"${weightVal?' (total weight: '+weightVal+'g)':''}
 
 Work step by step:
@@ -549,6 +569,16 @@ async function aiF(content){lastAIContent=content;$('fR').style.display='block';
   const stageTimer=setInterval(()=>{stageI=(stageI+1)%stages.length;const el=$('aiStage');if(el)el.textContent=stages[stageI];else clearInterval(stageTimer)},1800);$('eA').style.display='none';$('cB').style.display='none';
   try{
     const resp=await fetch(PX,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content}]})});
+    if(!resp.ok){clearInterval(stageTimer);
+      const errText=await resp.text().catch(()=>'Unknown error');
+      let friendly='AI server error ('+resp.status+')';
+      if(resp.status===413)friendly='Photo too large — try again from a smaller distance';
+      else if(resp.status===429)friendly='Rate limited — wait 30 seconds and retry';
+      else if(resp.status===500)friendly='Proxy server error — check Vercel deployment';
+      else if(resp.status===401||resp.status===403)friendly='API key invalid — check your proxy config';
+      $('fR').innerHTML=`<div style="padding:14px;text-align:center"><div style="color:var(--red);font-size:12px;font-weight:600">${friendly}</div><div style="color:var(--tx3);font-size:10px;margin-top:4px">${errText.slice(0,100)}</div><button class="btn btn-s" style="height:38px;font-size:12px;margin-top:10px" onclick="retryAI()">↻ Retry</button></div>`;
+      $('eA').style.display='block';return;
+    }
     const d=await resp.json();
     clearInterval(stageTimer);
     // Surface real API errors instead of generic "failed"
@@ -568,7 +598,10 @@ async function aiF(content){lastAIContent=content;$('fR').style.display='block';
     showFR(aiRes);
   }catch(e){
     clearInterval(stageTimer);
-    $('fR').innerHTML=`<div style="padding:14px;text-align:center"><div style="color:var(--tx3);font-size:12px">Couldn't analyse — ${e.message==='Failed to fetch'?'no connection to AI server':'response was cut off'}. Try again.</div><button class="btn btn-s" style="height:38px;font-size:12px;margin-top:10px" onclick="retryAI()">↻ Retry</button></div>`;
+    const errMsg=e.message==='Failed to fetch'?'Cannot reach the AI server — check your connection and that the proxy is running'
+      :e.message==='No JSON in response'?'AI responded but not in expected format — retry'
+      :'Error: '+e.message;
+    $('fR').innerHTML=`<div style="padding:14px;text-align:center"><div style="color:var(--red);font-size:12px;font-weight:600">Scan failed</div><div style="color:var(--tx3);font-size:11px;margin-top:6px;line-height:1.5">${errMsg}</div><button class="btn btn-s" style="height:38px;font-size:12px;margin-top:10px" onclick="retryAI()">↻ Retry</button></div>`;
     $('eA').style.display='block';
   }
 }
